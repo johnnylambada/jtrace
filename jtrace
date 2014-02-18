@@ -1,0 +1,37 @@
+#!/usr/bin/python
+
+import fnmatch
+import os
+import re
+import sys
+
+def find_files(directory, pattern):
+    for root, dirs, files in os.walk(directory):
+        for basename in files:
+            if fnmatch.fnmatch(basename, pattern):
+                filename = os.path.join(root, basename)
+                yield filename
+
+def findJava():
+    clazz={}
+    epat = re.compile(".*?(\w*)\s*extends\s*(\w*).*")
+    for f in find_files('.',"*.java"):
+        for line in open(f):
+            m = epat.match(line)
+            if m:
+                clazz[m.group(1)]=m.group(2)
+    return clazz
+            
+
+def display(name,clazz):
+    print name,
+    if clazz.has_key(name):
+        display(clazz[name],clazz)
+    else:
+        print "Object"
+
+clazz = findJava()
+iargv = iter(sys.argv)
+next(iargv)
+for name in iargv:
+    display(name,clazz)
